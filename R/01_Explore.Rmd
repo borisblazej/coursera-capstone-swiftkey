@@ -1,0 +1,32 @@
+---
+title: "Swiftkey Data Exploration"
+author: "BB"
+date: '2022-04-21'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+raw_data_path <- "./data/de_DE.blogs.txt"
+zip_data_path <- "./data/Coursera-SwiftKey.zip"
+raw_data_url <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
+```
+
+## 1. Download and load data
+
+The data can be downoaded from [Capstone Dataset](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip). We do optional download to the 'data' folder.
+
+```{r load}
+
+if (!file.exists(raw_data_path)) {
+    if (!file.exists(zip_data_path)) {
+        download.file(raw_data_url, zip_data_path)
+    }
+    unzip(zip_data_path,
+          exdir = "data",
+          junkpaths = TRUE)
+}
+
+```
+
