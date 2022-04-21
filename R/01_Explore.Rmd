@@ -6,11 +6,27 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+# Libraries
+
+# Parameters
 knitr::opts_chunk$set(echo = TRUE)
 
-raw_data_path <- "./data/de_DE.blogs.txt"
-zip_data_path <- "./data/Coursera-SwiftKey.zip"
+raw_data_path <- "../data/de_DE.blogs.txt"
+zip_data_path <- "../data/Coursera-SwiftKey.zip"
 raw_data_url <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
+
+# Functions
+processFile <- function(filepath) {
+  con <- file(file.path(filepath), "r")
+  while ( TRUE ) {
+    line <- readLines(con, n = 1)
+    if ( length(line) == 0 ) {
+      break
+    }
+  }
+    close(con)
+}
+
 ```
 
 ## 1. Download and load data
@@ -27,6 +43,9 @@ if (!file.exists(raw_data_path)) {
           exdir = "data",
           junkpaths = TRUE)
 }
+
+
+raw_text <- processFile(raw_data_path)
 
 ```
 
