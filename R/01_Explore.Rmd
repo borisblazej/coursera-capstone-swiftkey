@@ -7,25 +7,18 @@ output: html_document
 
 ```{r setup, include=FALSE}
 # Libraries
+library(stringr)
 
 # Parameters
 knitr::opts_chunk$set(echo = TRUE)
 
-raw_data_path <- "../data/de_DE.blogs.txt"
+raw_data_path <- "../data/en_US.twitter.txt"
 zip_data_path <- "../data/Coursera-SwiftKey.zip"
 raw_data_url <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
 
 # Functions
-processFile <- function(filepath) {
-  con <- file(file.path(filepath), "r")
-  while ( TRUE ) {
-    line <- readLines(con, n = 1)
-    if ( length(line) == 0 ) {
-      break
-    }
-  }
-    close(con)
-}
+
+
 
 ```
 
@@ -40,12 +33,62 @@ if (!file.exists(raw_data_path)) {
         download.file(raw_data_url, zip_data_path)
     }
     unzip(zip_data_path,
-          exdir = "data",
+          exdir = "../data",
           junkpaths = TRUE)
 }
 
+con <- file(raw_data_path)
 
-raw_text <- processFile(raw_data_path)
+raw_text <- readLines(con)
+
+sample_text <- sample(x = raw_text, 
+                      size = floor(0.3 * length(raw_text)))
+
 
 ```
 
+
+## 2. Length of text lines
+
+For Week 1 quiz we want to find the longest text line:
+
+```{r long_text}
+
+lengths <- str_length(raw_text)
+
+which.max(lengths)
+lengths[which.max(lengths)]
+raw_text[which.max(lengths)]
+
+
+```
+en_US.twitter.txt: 
+- 213 characters
+- line number 1.484.357
+- Text: It's time for you to give me a little bit of lovin'ï¼ˆã\u0081•ã\u0081\u0081ã\u0081¡ã‚‡ã\u0081£ã\u0081¨ã\u0081¯ã\u0081‚ã\u0081ªã\u0081Ÿã\u0081®æ„›ã‚’ã\u0081¡ã‚‡ã\u0081†ã\u0081 ã\u0081„ï¼‰Baby, hold me tight and do what I tell youï¼\u0081ï¼ˆãƒ™ã‚¤ãƒ“ãƒ¼æŠ±ã\u0081\u008dã\u0081—ã‚\u0081ã\u0081¦ç§\u0081ã\u0081Œè¨€ã\u0081†ã‚ˆã\u0081†ã\u0081«ï¼\u0081ï¼‰
+
+en_US.blogs.txt:
+- 483.415 characters
+- line number 40.835
+- Text: UPDATE AS OF 11:30 A.M. EDT, MONDAY, APRIL 11: No damage to Japan's nuclear power plants was reported today after another strong aftershock hit the ...
+
+en_US.news.txt:
+- 14.556 characters
+- line number 5.760
+Text: Assets Average Average Compound Fund ($Mil) Maturity Yield(%) Yield(%) AZL Money Market Fund 858.9 36 0.00 0.00 Amer Century Capital Presv Fund/In 2,878.9 ...
+
+
+
+
+## 3. "love/hate" Ratio
+
+For week 1 quiz we want in en_US.twitter.txt to 'divide the number of lines where the word "love" (all lowercase) occurs by the number of lines the word "hate" (all lowercase) occurs'
+
+```{r love hate ratio}
+love_lines <- str_subset(raw_text, "love")
+hate_lines <- str_subset(raw_text, "hate")
+    
+length(love_lines) / length(hate_lines)    
+```
+
+The love/hate ratio in en_US.twitter.txt is 4.108592.
