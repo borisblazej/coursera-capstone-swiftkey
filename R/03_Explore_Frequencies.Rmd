@@ -1,0 +1,85 @@
+---
+title: "Word Frequency Exploration (Week 2)"
+author: "BB"
+date: '2022-04-25'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Libraries
+library(stringr)
+library(tidyverse)
+
+# Parameters
+knitr::opts_chunk$set(echo = TRUE)
+
+# Data (see 01_Explore.Rmd and 02_Clean.R for details or run both in case of error)
+clean_text <- read_rds("../data/en_US.twitter_clean.rds.gz")
+
+# Functions
+
+
+
+```
+
+## 1. Break text into words
+
+```{r text splits}
+
+words <- str_split(clean_text, "\\s") %>% unlist()
+
+# 2-grams
+gram2.1 <- str_match_all(clean_text, "\\w+\\s\\w+") %>% 
+    unlist()
+# above only finds word pairs (1,2), (3,4), ... but not (2,3), hence:
+gram2.2 <- str_replace(clean_text, "^\\w+\\s", "") %>% 
+    str_match_all("\\w+\\s\\w+") %>% 
+    unlist()
+gram2 <- c(gram2.1, gram2.2)
+rm(gram2.1, gram2.2)
+
+# 3-grams
+gram3.1 <- str_match_all(clean_text, "\\w+(\\s\\w+){2}") %>% 
+    unlist()
+gram3.2 <- str_replace(clean_text, "^\\w+\\s", "") %>% 
+    str_match_all("\\w+(\\s\\w+){2}") %>% 
+    unlist()
+gram3.3 <- str_replace(clean_text, "^(\\w+\\s){2}", "") %>% 
+    str_match_all("\\w+(\\s\\w+){2}") %>% 
+    unlist()
+gram3 <- c(gram3.1, gram3.2, gram3.3)
+rm(gram3.1, gram3.2, gram3.3)
+gc()
+
+```
+
+## 2. Word Frequencies
+
+```{r word frequencies}
+
+word_freq_raw <- as.data.frame(table(words)) 
+
+word_freq_1 <- word_freq_raw %>%
+    arrange(-Freq) %>% 
+    filter(words != "")
+
+plot(word_freq_1$Freq[1:1000])
+word_freq_1$words[1:20]
+
+```
+
+## 3. 2-gram frequencies
+
+```{r 2-gram frequencies}
+
+gram2_freq_raw <- as.data.frame(table(gram2)) 
+
+gram2_freq_1 <- gram2_freq_raw %>%
+    arrange(-Freq)
+
+plot(gram2_freq_1$Freq[1:1000])
+gram2_freq_1$gram2[1:20]
+
+```
+
+

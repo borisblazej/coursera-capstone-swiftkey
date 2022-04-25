@@ -1,5 +1,5 @@
 ---
-title: "Swiftkey Data Exploration"
+title: "Basic Swiftkey Data Exploration (Week 1)"
 author: "BB"
 date: '2022-04-21'
 output: html_document
