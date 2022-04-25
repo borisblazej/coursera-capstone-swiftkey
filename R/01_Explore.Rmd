@@ -92,3 +92,4 @@ length(love_lines) / length(hate_lines)
 ```
 
 The love/hate ratio in en_US.twitter.txt is 4.108592.
+
