@@ -51,9 +51,17 @@ gram3 <- c(gram3.1, gram3.2, gram3.3)
 rm(gram3.1, gram3.2, gram3.3)
 gc()
 
+write_rds(words, "../data/en_US.twitter_word.rds.gz", compress = "gz")
+write_rds(gram2, "../data/en_US.twitter_gram2.rds.gz", compress = "gz")
+write_rds(gram3, "../data/en_US.twitter_gram3.rds.gz", compress = "gz")
+
+head(gram3, 10)
+
 ```
 
 ## 2. Word Frequencies
+
+Build a sorted word-frequency table, then plot the distribution from the top 1000 words and show top 20 words:
 
 ```{r word frequencies}
 
@@ -68,7 +76,9 @@ word_freq_1$words[1:20]
 
 ```
 
-## 3. 2-gram frequencies
+## 3. 2-gram/3-gram frequencies
+
+Same procedure for 2-grams as for words:
 
 ```{r 2-gram frequencies}
 
@@ -82,4 +92,41 @@ gram2_freq_1$gram2[1:20]
 
 ```
 
+... and for 3-grams:
+```{r 3-gram frequencies}
+
+gram3_freq_raw <- as.data.frame(table(gram3)) 
+
+gram3_freq_1 <- gram3_freq_raw %>%
+    arrange(-Freq)
+
+plot(gram3_freq_1$Freq[1:1000])
+gram3_freq_1$gram3[1:20]
+
+```
+
+
+# 4. Top words
+
+How many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language? 90%? 
+
+```{r top words}
+
+word_occurences <- sum(word_freq_1$Freq)
+
+word_freq_2 <- word_freq_1 %>% 
+    mutate(share = Freq / word_occurences,
+           cum_freq = cumsum(Freq),
+           cum_share = cum_freq / word_occurences)
+
+top_50pct_words <- word_freq_2 %>% 
+    filter(cum_share < 0.5) 
+nrow(top_50pct_words)
+
+top_90pct_words <- word_freq_2 %>% 
+    filter(cum_share < 0.9) 
+nrow(top_90pct_words)
+
+
+```
 

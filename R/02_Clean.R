@@ -16,7 +16,7 @@ head(raw_text, 10)
 
 # 2. Remove "non-word" characters
 
-text_1 <- str_replace_all(raw_text, "[^\\w]", " ")
+text_1 <- str_replace_all(raw_text, "[^\\w|\\']", " ")
 text_1 <- str_replace_all(text_1, "[\\s]+", " ")
 text_1 <- str_replace_all(text_1, "[^A-Za-z0-9]", " ")
 text_1 <- str_trim(text_1)
