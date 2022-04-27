@@ -1,0 +1,38 @@
+---
+title: "Language Exploration (Week 2)"
+author: "BB"
+date: '2022-04-27'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Libraries
+library(stringr)
+library(tidyverse)
+library(hunspell)
+
+# Parameters
+knitr::opts_chunk$set(echo = TRUE)
+
+# Data 
+clean_text <- read_rds("../data/en_US.twitter_clean.rds.gz")
+word <- read_rds("../data/en_US.twitter_word.rds.gz")
+scowl_clean <- read_rds("../data/scowl_clean.rds.gz")
+
+# Functions
+
+
+
+```
+
+## 1. Non-English Words
+
+```{r Not English}
+
+english <- word[hunspell_check(word)]
+non_english <- word[!hunspell_check(word)]
+
+head(non_english, 100)
+
+```
+

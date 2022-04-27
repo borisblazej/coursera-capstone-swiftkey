@@ -9,8 +9,9 @@ scowl_files <- all_scowl_files[-which(str_detect(all_scowl_files, "name"))]
 
 scowl <- sapply(scowl_files, function(f) {
     con <- file(paste0("./scowl/final/",f))
-    readLines(con)(
+    content <- readLines(con)
     close(con)
+    return(content)
 }) %>% 
     unlist(use.names = FALSE)
 
