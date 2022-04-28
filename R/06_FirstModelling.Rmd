@@ -1,0 +1,61 @@
+---
+title: "Next Word Modelling (week 2)"
+author: "BB"
+date: '2022-04-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Libraries
+library(stringr)
+library(tidyverse)
+library(caret)
+library(recipes)
+
+
+# Parameters
+knitr::opts_chunk$set(echo = TRUE)
+
+# Data 
+gram2 <- read_rds("../data/en_US.twitter_gram2.rds.gz")
+
+# Functions
+
+
+
+```
+
+## 1. Dataset Building
+
+```{r Dataset}
+
+swiftkey_raw <- as.data.frame(gram2) %>% 
+    separate(gram2, c("x", "y"), " ")
+
+
+# Data split
+set.seed(123)
+train_index <- createDataPartition(swiftkey_raw$y, p = 0.05, list = FALSE)
+swiftkey_train <- swiftkey_raw[train_index, ]
+swiftkey_test <- swiftkey_raw[-train_index, ]
+
+# Feature engineering: Label Encoding
+swiftkey_recipe <- recipe(y ~ ., data = swiftkey_train) %>%
+    step_integer(x) %>% 
+    step_dummy(all_nominal(), one_hot = TRUE) %>%
+    prep() %>%
+    bake(new_data = NULL)
+    
+
+```
+
+
+## 2. Training
+
+```{r training}
+
+model1 <- train(y~., data = swiftkey_train, method="rf")
+
+
+```
+
