@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Data 
 gram2 <- read_rds("../data/en_US.twitter_gram2.rds.gz")
+gram3 <- read_rds("../data/en_US.twitter_gram3.rds.gz")
+gram4 <- read_rds("../data/en_US.twitter_gram4.rds.gz")
 
 # Functions
 
@@ -27,35 +29,67 @@ gram2 <- read_rds("../data/en_US.twitter_gram2.rds.gz")
 
 ## 1. Dataset Building
 
-```{r Dataset}
+Datasets needed for a basic n-gram model for predicting the next word based on the previous 1, 2, or 3 words.
 
-swiftkey_raw <- as.data.frame(gram2) %>% 
-    separate(gram2, c("x", "y"), " ")
+```{r datasets}
 
+swiftkey_2 <- as.data.frame(gram2) %>% 
+    separate(gram2, c("w1", "w2"), " ") %>% 
+    group_by(w1,w2) %>% 
+    summarize(freq = n())
 
-# Data split
-set.seed(123)
-train_index <- createDataPartition(swiftkey_raw$y, p = 0.05, list = FALSE)
-swiftkey_train <- swiftkey_raw[train_index, ]
-swiftkey_test <- swiftkey_raw[-train_index, ]
+swiftkey_3 <- as.data.frame(gram3) %>% 
+    separate(gram3, c("w1", "w2", "w3"), " ") %>% 
+    group_by(w1,w2,w3) %>% 
+    summarize(freq = n())
 
-# Feature engineering: Label Encoding
-swiftkey_recipe <- recipe(y ~ ., data = swiftkey_train) %>%
-    step_integer(x) %>% 
-    step_dummy(all_nominal(), one_hot = TRUE) %>%
-    prep() %>%
-    bake(new_data = NULL)
-    
+swiftkey_4 <- as.data.frame(gram4) %>% 
+    separate(gram4, c("w1", "w2", "w3", "w4"), " ") %>% 
+    group_by(w1,w2, w3, w4) %>% 
+    summarize(freq = n())
+
 
 ```
 
 
-## 2. Training
-
-```{r training}
-
-model1 <- train(y~., data = swiftkey_train, method="rf")
+## 2. Prediction
 
 
+
+```{r bigram prediction}
+
+predict2 <- function(corpus, word1) {
+
+    set <- corpus[corpus$w1 == word1,]
+    
+    n_cases <- sum(set$freq, na.rm = TRUE)
+    
+    probs <- set %>% 
+        mutate(p = freq / n_cases) %>% 
+        select(-freq) %>% 
+        arrange(-p)
+    
+    head(probs, 5)
+}
+
+predict2(swiftkey_markov,"in")
+predict2(swiftkey_markov,"love")
+predict2(swiftkey_markov,"oger")
+
+
+```
+
+
+```{r trigram prediction}
+
+predict3 <- function(corpus, word1, word2) {
+    
+    set_1 <- corpus[corpus$w1 == word2,]
+    
+    head(set_1)
+
+}
+
+predict3(swiftkey_markov,"I", "love")
 ```
 

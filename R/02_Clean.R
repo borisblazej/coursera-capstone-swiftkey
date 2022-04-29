@@ -25,7 +25,7 @@ text_1 <- str_to_lower(raw_text)
 
 text_2 <- str_replace_all(text_1, "[^\\w'\\-]", " ")
 text_2 <- str_replace_all(text_2, "[\\s]+", " ")
-text_2 <- str_replace_all(text_2, "[^A-Za-z0-9'\\-]", " ")
+text_2 <- str_replace_all(text_2, "[^A-Za-z'\\-]", " ")
 ### special characters survive only if between two letters
 text_2 <- str_replace_all(text_2, "'[^\\w]", " ")
 text_2 <- str_replace_all(text_2, "[^\\w]'", " ")
