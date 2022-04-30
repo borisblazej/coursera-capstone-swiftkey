@@ -31,7 +31,7 @@ source("./helper_functions.R")
 
 ## 1. Dataset Building
 
-Datasets needed for a basic n-gram model for predicting the next word based on the previous 1, 2, or 3 words.
+Datasets needed for a basic n-gram model for predicting the next word based on the previous 1, 2, or 3 words. Only the top 100 words survive in any n-gram.
 
 ```{r datasets}
 
@@ -39,23 +39,33 @@ swiftkey_1 <- as.data.frame(word) %>%
     group_by(word) %>% 
     summarize(freq = n()) %>% 
     arrange(-freq) %>% 
-    filter(word != "")
+    filter(word != "") %>%
+    head(1000)
     
 
 swiftkey_2 <- as.data.frame(gram2) %>% 
     separate(gram2, c("w1", "w2"), " ") %>% 
+    filter(w1 %in% swiftkey_1$word,
+           w2 %in% swiftkey_1$word) %>% 
     group_by(w1,w2) %>% 
     summarize(freq = n()) %>% 
     arrange(-freq)
 
 swiftkey_3 <- as.data.frame(gram3) %>% 
     separate(gram3, c("w1", "w2", "w3"), " ") %>% 
+    filter(w1 %in% swiftkey_1$word,
+           w2 %in% swiftkey_1$word,
+           w3 %in% swiftkey_1$word) %>% 
     group_by(w1,w2,w3) %>% 
     summarize(freq = n()) %>% 
     arrange(-freq)
 
 swiftkey_4 <- as.data.frame(gram4) %>% 
     separate(gram4, c("w1", "w2", "w3", "w4"), " ") %>% 
+    filter(w1 %in% swiftkey_1$word,
+           w2 %in% swiftkey_1$word,
+           w3 %in% swiftkey_1$word,
+           w4 %in% swiftkey_1$word) %>% 
     group_by(w1,w2, w3, w4) %>% 
     summarize(freq = n()) %>% 
     arrange(-freq)
@@ -97,7 +107,7 @@ predict2(swiftkey_2, "oger")
 
 ```
 
-Predict next words form a given two-word phrase based on trigrams:
+Predict next words from a given two-word phrase based on trigrams:
 
 ```{r trigram prediction}
 
@@ -156,37 +166,51 @@ Predict from a given phrase by combination of above and handle unseen ngrams:
 
 predict_phrase <- function(corpus, phrase) {
     
-    corpus <- swiftkey
-    phrase <- "the big oger"
-    
+    # corpus <- swiftkey
+    # phrase <- "big"
+    # 
     clean_phase <- clean_text(phrase)
     final_words <- last_3_words(clean_phase)
     
-    pred <- case_when(
-        length(final_words) == 3 ~
-            predict4(corpus[["4"]], 
+    pred <- NA
+    
+    if(length(final_words) == 3) 
+        pred <- predict4(corpus[["4"]], 
                      final_words[1], 
                      final_words[2], 
-                     final_words[3]),
-        length(final_words) == 2 ~
-            predict3(corpus[["3"]], 
+                     final_words[3])
+    if(length(final_words) == 2) 
+        pred <- predict3(corpus[["3"]], 
                      final_words[1], 
-                     final_words[2]),
-        length(final_words) == 1 ~
-            predict2(corpus[["2"]], 
-                     final_words[1]),
-        TRUE ~ NA
-    )
+                     final_words[2])
+    if(length(final_words) == 1)
+        pred <- predict2(corpus[["2"]], 
+                     final_words[1])
     
     pred
     
-    ifelse(is.na(pred), corpus[["1"]]$word[1], pred)
+    if(is.na(pred)) corpus[["1"]]$word[1] else pred
 }
 
 predict_phrase(swiftkey, "me")
 predict_phrase(swiftkey, "make me")
 predict_phrase(swiftkey, "you make me")
 predict_phrase(swiftkey, "the big oger")
+
+```
+
+# The KI Story
+
+```{r KI story}
+
+phrase <- "i love to"
+
+for(i in 1:10) {
+    new <- predict_phrase(swiftkey, phrase)
+    phrase <- paste(phrase,new)
+}
+
+predict_phrase(swiftkey, "i love to")
 
 ```
 

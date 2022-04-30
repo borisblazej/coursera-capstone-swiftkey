@@ -12,9 +12,7 @@ raw_data_path <- "./data/en_US.twitter.txt"
 con <- file(raw_data_path)
 raw_text <- readLines(con)
 ### for runtime optimization use only 10% sample
-raw_text <- sample(raw_text, floor(0.7 * length(raw_text)))
-
-head(raw_text, 10)
+raw_text <- sample(raw_text, floor(0.3 * length(raw_text)))
 
 # 2. All characters lowercase
 

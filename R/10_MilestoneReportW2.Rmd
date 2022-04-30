@@ -1,0 +1,112 @@
+---
+title: "Swiftkey Milestone Report (Week2)"
+author: "Boris Blazej"
+date: '2022-04-30'
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+# Libraries
+library(stringr)
+library(tidyverse)
+library(knitr)
+
+# Parameters
+knitr::opts_chunk$set(echo = TRUE)
+
+# Data (see 01_Explore.Rmd and 02_Clean.R for details or run both in case of error)
+clean_text <- read_rds("../data/en_US.twitter_clean.rds.gz")
+```
+
+## Project Summary
+
+Goal of this project is to build an app that mimics autocompletion algorithms as known from mobile phone keyboard features (swiftkey) or Google's autocompletion feature. The central task is to predict the intended (or most probable) next word when given a phrase of 1-3 words - hence this is sometimes referred to as "next word algorithm". This kind of task belongs to scientific field of "natural language processing" (NLP).
+
+__The project plan is set up in concrete stages:__
+
+- Load suitable training data and explore ... DONE
+- Build a simple model to develop/prove the concept ... DONE
+- Implement the model into a shiny app ... OPEN
+- Improve performance and user experience ... OPEN
+
+
+
+## Training data
+
+As training data we use a dataset provided by [Swiftkey and Coursera]("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"). The set contains data in four languages (English, Finnish, Russian, German) from three different sources: twitter, blogs and news. For this project we opt for the English twitter data. 
+
+__Important:__ since NLP is a resource intensive discipline (both concerning memory usage and processor performance) we limit the training data to random subset of 30% of all tweets. Exploration supports our impression that this simplification will not significantly limit the quality of our model.
+
+The basic task to make our data operable is called tokenization, which means breaking down the text into small pieces: words and n-grams. n-grams are ordered combinations of words as seen in the text, where n is the number of words (e.g. 2-gram, 3-gram, ...).
+
+```{r tokenization, echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+words <- str_split(clean_text, "\\s") %>% unlist()
+words <- str_trim(words)
+
+# 2-grams
+gram2.1 <- str_match_all(clean_text, "[\\w'\\-]+\\s[\\w'\\-]+") %>% 
+    unlist()
+# above only finds word pairs (1,2), (3,4), ... but not (2,3), hence:
+gram2.2 <- str_replace(clean_text, "^[\\w'\\-]+\\s", "") %>% 
+    str_match_all("[\\w'\\-]+\\s[\\w'\\-]+") %>% 
+    unlist()
+gram2 <- c(gram2.1, gram2.2)
+gram2 <- str_trim(gram2)
+rm(gram2.1, gram2.2)
+
+
+```
+
+The distribution of word and n-gram frequency in the data steeply falls after only a small number of "dominant" tokens in the text.
+
+```{r frequency distribution}
+
+word_freq_raw <- as.data.frame(table(words)) 
+
+word_freq_1 <- word_freq_raw %>%
+    arrange(-Freq) %>% 
+    filter(words != "")
+
+gram2_freq_raw <- as.data.frame(table(gram2)) 
+
+gram2_freq_1 <- gram2_freq_raw %>%
+    arrange(-Freq)
+
+g1 <-  ggplot(data = word_freq_1[1:1000,]) +
+    aes(x = 1:1000, y=Freq) +
+    geom_point() +
+    xlab("nth most frequent word") + 
+    ylab("Freqency within training data")
+
+g2 <- ggplot(data = gram2_freq_1[1:1000,]) +
+    aes(x = 1:1000, y=Freq) +
+    geom_point() +
+    xlab("nth most frequent bigram") + 
+    ylab("Freqency within training data")
+
+g1;g2
+
+```
+
+The top 20 words and top 20 bigrams are:
+```{r top-20}
+
+kable(x = data.frame("Top 20 words" = word_freq_1$words[1:20],
+      "Top 20 bigrams" = gram2_freq_1$gram2[1:20]))
+
+```
+
+
+Finally, we learn that, even if we limit our training data to the 1.000 most frequent words (1%) we still cover 76% of the text.
+
+```{r coverage}
+
+n_text <- sum(word_freq_1$Freq)
+n_select <- sum(word_freq_1$Freq[1:1000])
+
+round(1000/length(word_freq_1$Freq),2)
+round(n_select/n_text, 2)
+
+```
+
