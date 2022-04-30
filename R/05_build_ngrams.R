@@ -16,6 +16,12 @@ gram3_pattern <- "[\\w'\\-]+\\s[\\w'\\-]+\\s[\\w'\\-]+"
 gram4_pattern <- "[\\w'\\-]+\\s[\\w'\\-]+\\s[\\w'\\-]+\\s[\\w'\\-]+"
 
 
+# words -----------------------------------
+words <- str_split(clean_text, "\\s") %>% 
+    unlist()
+words <- str_trim(words)
+
+
 # 2-grams -----------------------------------
 gram2.1 <- str_match_all(clean_text, gram2_pattern) %>% 
     unlist()

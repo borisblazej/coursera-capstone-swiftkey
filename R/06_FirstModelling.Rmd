@@ -17,12 +17,14 @@ library(recipes)
 knitr::opts_chunk$set(echo = TRUE)
 
 # Data 
+word <- read_rds("../data/en_US.twitter_word.rds.gz")
 gram2 <- read_rds("../data/en_US.twitter_gram2.rds.gz")
 gram3 <- read_rds("../data/en_US.twitter_gram3.rds.gz")
 gram4 <- read_rds("../data/en_US.twitter_gram4.rds.gz")
 
 # Functions
 
+source("./helper_functions.R")
 
 
 ```
@@ -33,20 +35,35 @@ Datasets needed for a basic n-gram model for predicting the next word based on t
 
 ```{r datasets}
 
+swiftkey_1 <- as.data.frame(word) %>% 
+    group_by(word) %>% 
+    summarize(freq = n()) %>% 
+    arrange(-freq) %>% 
+    filter(word != "")
+    
+
 swiftkey_2 <- as.data.frame(gram2) %>% 
     separate(gram2, c("w1", "w2"), " ") %>% 
     group_by(w1,w2) %>% 
-    summarize(freq = n())
+    summarize(freq = n()) %>% 
+    arrange(-freq)
 
 swiftkey_3 <- as.data.frame(gram3) %>% 
     separate(gram3, c("w1", "w2", "w3"), " ") %>% 
     group_by(w1,w2,w3) %>% 
-    summarize(freq = n())
+    summarize(freq = n()) %>% 
+    arrange(-freq)
 
 swiftkey_4 <- as.data.frame(gram4) %>% 
     separate(gram4, c("w1", "w2", "w3", "w4"), " ") %>% 
     group_by(w1,w2, w3, w4) %>% 
-    summarize(freq = n())
+    summarize(freq = n()) %>% 
+    arrange(-freq)
+
+swiftkey <- list("1" = swiftkey_1,
+                 "2" = swiftkey_2,
+                 "3" = swiftkey_3,
+                 "4" = swiftkey_4)
 
 
 ```
@@ -54,7 +71,7 @@ swiftkey_4 <- as.data.frame(gram4) %>%
 
 ## 2. Prediction
 
-
+Predict next word from one given word, based on bigrams:
 
 ```{r bigram prediction}
 
@@ -65,31 +82,111 @@ predict2 <- function(corpus, word1) {
     n_cases <- sum(set$freq, na.rm = TRUE)
     
     probs <- set %>% 
-        mutate(p = freq / n_cases) %>% 
+        mutate(p = round(freq / n_cases,2)) %>% 
         select(-freq) %>% 
         arrange(-p)
     
-    head(probs, 5)
+    probs$w2[1]
 }
 
-predict2(swiftkey_markov,"in")
-predict2(swiftkey_markov,"love")
-predict2(swiftkey_markov,"oger")
+predict2(swiftkey_2, "you")
+predict2(swiftkey_2, "to")
+predict2(swiftkey_2, "me")
+predict2(swiftkey_2, "oger")
 
 
 ```
 
+Predict next words form a given two-word phrase based on trigrams:
 
 ```{r trigram prediction}
 
 predict3 <- function(corpus, word1, word2) {
     
-    set_1 <- corpus[corpus$w1 == word2,]
+    set <- corpus %>% 
+        filter(w1==word1, w2==word2)
     
-    head(set_1)
+    n_cases <- sum(set$freq, na.rm = TRUE)
+    
+    probs <- set %>% 
+        mutate(p = round(freq / n_cases,2)) %>% 
+        select(-freq)
+    
+    probs$w3[1]
+}
+
+predict3(swiftkey_3, "don't", "you")
+predict3(swiftkey_3, "love", "to")
+predict3(swiftkey_3, "make", "me")
+predict3(swiftkey_3, "big", "oger")
+
+
+```
+
+Predict the next words form a given three-word phrase based on tetragrams:
+
+```{r tetragram prediction}
+
+predict4 <- function(corpus, word1, word2, word3) {
+    
+    set <- corpus %>% 
+        filter(w1==word1, w2==word2, w3 == word3)
+    
+    n_cases <- sum(set$freq, na.rm = TRUE)
+    
+    probs <- set %>% 
+        mutate(p = round(freq / n_cases,2)) %>% 
+        select(-freq)
+    
+    probs$w4[1]
 
 }
 
-predict3(swiftkey_markov,"I", "love")
+predict4(swiftkey_4,"why", "don't", "you")
+predict4(swiftkey_4,"i", "love", "to")
+predict4(swiftkey_4,"you", "make", "me")
+predict4(swiftkey_4,"the", "big", "oger")
+
+
+```
+
+Predict from a given phrase by combination of above and handle unseen ngrams:
+
+```{r predict phrase}
+
+predict_phrase <- function(corpus, phrase) {
+    
+    corpus <- swiftkey
+    phrase <- "the big oger"
+    
+    clean_phase <- clean_text(phrase)
+    final_words <- last_3_words(clean_phase)
+    
+    pred <- case_when(
+        length(final_words) == 3 ~
+            predict4(corpus[["4"]], 
+                     final_words[1], 
+                     final_words[2], 
+                     final_words[3]),
+        length(final_words) == 2 ~
+            predict3(corpus[["3"]], 
+                     final_words[1], 
+                     final_words[2]),
+        length(final_words) == 1 ~
+            predict2(corpus[["2"]], 
+                     final_words[1]),
+        TRUE ~ NA
+    )
+    
+    pred
+    
+    ifelse(is.na(pred), corpus[["1"]]$word[1], pred)
+}
+
+predict_phrase(swiftkey, "me")
+predict_phrase(swiftkey, "make me")
+predict_phrase(swiftkey, "you make me")
+predict_phrase(swiftkey, "the big oger")
+
 ```
 

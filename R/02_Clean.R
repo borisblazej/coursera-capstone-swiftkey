@@ -12,7 +12,7 @@ raw_data_path <- "./data/en_US.twitter.txt"
 con <- file(raw_data_path)
 raw_text <- readLines(con)
 ### for runtime optimization use only 10% sample
-raw_text <- sample(raw_text, floor(0.1 * length(raw_text)))
+raw_text <- sample(raw_text, floor(0.7 * length(raw_text)))
 
 head(raw_text, 10)
 
@@ -26,17 +26,18 @@ text_1 <- str_to_lower(raw_text)
 text_2 <- str_replace_all(text_1, "[^\\w'\\-]", " ")
 text_2 <- str_replace_all(text_2, "[\\s]+", " ")
 text_2 <- str_replace_all(text_2, "[^A-Za-z'\\-]", " ")
-### special characters survive only if between two letters
-text_2 <- str_replace_all(text_2, "'[^\\w]", " ")
-text_2 <- str_replace_all(text_2, "[^\\w]'", " ")
-text_2 <- str_replace_all(text_2, "\\-[^\\w]", " ")
-text_2 <- str_replace_all(text_2, "[^\\w]\\-", " ")
+### special characters survive only if ...
+### ... not at begin/end
+text_2 <- str_replace_all(text_2, "^['-]", " ")
+text_2 <- str_replace_all(text_2, "['-]$", " ")
+### ...not alone or beside each other
+text_2 <- str_replace_all(text_2, "'[\\s-]", " ")
+text_2 <- str_replace_all(text_2, "[\\s-]'", " ")
+text_2 <- str_replace_all(text_2, "-[\\s']", " ")
+text_2 <- str_replace_all(text_2, "[\\s']-'", " ")
 
-head(text_2, 10)
 
 clean_text <- str_trim(text_2)
-
-head(clean_text, 10)
 
 # 99. Write RDS to use in further steps
 
