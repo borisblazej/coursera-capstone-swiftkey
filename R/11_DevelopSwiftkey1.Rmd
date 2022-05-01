@@ -1,0 +1,35 @@
+---
+title: "Developing The Swiftkey1 Model"
+author: "Boris Blazej"
+date: '2022-05-01'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Options
+knitr::opts_chunk$set(echo = TRUE)
+
+# Paraneters
+text_path <- "../data/en_US.twitter_clean.rds.gz"
+
+# Libraries
+
+# The "package" = needed functions
+source("swiftkey1.R")
+```
+
+## Notes
+
+ - Parameters: text quantity, top n words
+ - Performance
+    - Profile: build + predict
+    - Size of model object
+    - Precision (specificity, ...)
+ 
+## Train / Build the model
+
+```{r train}
+
+```
+
+
