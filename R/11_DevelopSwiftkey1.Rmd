@@ -10,9 +10,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 # Paraneters
-text_path <- "../data/en_US.twitter_clean.rds.gz"
+raw_text <- "../data/en_US.twitter.txt"
 
 # Libraries
+
 
 # The "package" = needed functions
 source("swiftkey1.R")
@@ -29,6 +30,14 @@ source("swiftkey1.R")
 ## Train / Build the model
 
 ```{r train}
+
+train_text <- load_text(raw_text, nrows = 300000 )
+
+head(train_text)
+
+words <- build_ngram(train_text, 1)
+
+words[1:10,]
 
 ```
 

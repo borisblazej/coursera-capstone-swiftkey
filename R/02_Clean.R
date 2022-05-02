@@ -37,6 +37,8 @@ text_2 <- str_replace_all(text_2, "[\\s']-'", " ")
 
 clean_text <- str_trim(text_2)
 
+head(clean_text)
+
 # 99. Write RDS to use in further steps
 
 write_rds(clean_text, 
