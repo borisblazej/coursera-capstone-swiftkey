@@ -33,11 +33,15 @@ source("swiftkey1.R")
 
 train_text <- load_text(raw_text, nrows = 300000 )
 
-head(train_text)
+bigrams <- build_ngram(train_text, 2)
 
-words <- build_ngram(train_text, 1)
+bigrams[1:3]
+head(train_text, 3)
 
-words[1:10,]
+trigrams <- build_ngram(train_text, 3)
+trigrams[1:3]
+head(train_text, 3)
+ 
 
 ```
 

@@ -69,26 +69,81 @@ clean_text <- function(text) {
 ## for train_model()
 build_ngram <- function(text, n, keep_top = 1000) {
     
+    ### Development: #####
+    # text <- train_text
+    # n <- 2
+    ######################
+    
     if(n == 1) {
         
+        ### step 1: split text rows into words
         words <- str_split(text, "\\s") %>% 
             unlist()
         words <- str_trim(words)
         
-        ngram_freq <- as.data.frame(words) %>% 
+        ### step 2: count by words
+        word_freq <- as.data.frame(words) %>% 
             group_by(words) %>% 
             summarize(freq = n()) %>% 
             arrange(-freq) %>% 
             filter(words != "") %>%
             head(keep_top)
         
-        tot_n <- sum(ngram_freq$freq)
+        ### step 3: calculate probabilities from frequencies
+        tot_n <- sum(word_freq$freq)
         
-        ngram <- ngram_freq %>% 
+        ngram <- word_freq %>% 
             mutate(prob = freq / tot_n) %>% 
             select(-freq)
     
+    }
+    
+    if (n > 1) {
+        
+        ngram <- list()
+        
+        ### step 1: split text into ngrams
+        
+        word_separated_lines <- str_split(text, "\\s")
+        
+        n_lines <- length(word_separated_lines)
+        
+        for(i in 2:n) { # bigram, trigram, ...
+            
+            for (line in 1:n_lines) {
+                
+                ### Development ###
+                # i <- 2
+                # line <- 3
+                ###################
+                
+                ngram[[line]] <- list()
+                
+                n_words <- length(word_separated_lines[[line]])
+                ### in a line with n_words n_ngrams are possible
+                n_ngrams <- n_words + 1 - i
+                
+                for (p in (1:n_ngrams)) {
+                    # start pos. of possible ngrams
+                    
+                    ### Development ###
+                    # p <- 2
+                    ###################
+                    if (n_ngrams > 1) { 
+                        ngram[[line]][[p]] <- character()
+                        
+                        for (j in 1:i) {
+                            ngram[[line]][[p]] <-
+                                c(ngram[[line]][[p]],
+                                  word_separated_lines[[line]][p + j - 1])
+                            
+                        }
+                    }
+                }
+            }
         }
+
+    }
     
     ngram
     
