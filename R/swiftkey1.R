@@ -11,14 +11,11 @@ load_text <- function(textfile, nrows = 100000) {
     
     con <- file(textfile)
     text.raw <- readLines(con)
-    print.default(">>> File read ... <<<")
     close(con)
     text.sample <- sample(x = text.raw, 
                           size = nrows)
-    print.default(">>> Text sampled ... <<<")
     text.clean <- clean_text(text.sample)
-    print.default(">>> Text cleaned OK <<<")
-    
+
     text.clean
 }
 
@@ -47,8 +44,7 @@ next_word <- function(phrase) {
 clean_text <- function(text) {
     
     text1 <- str_to_lower(text)
-    print.default(">>> Only lower-case characters ... <<<")
-    
+
     ### remove "non-word" characters
     ### we allow  special characters ' like in it's and - like in e-learning
     text1 <- str_replace_all(text1, "[^\\w'\\-]", " ")
@@ -66,7 +62,6 @@ clean_text <- function(text) {
     text1 <- str_replace_all(text1, "[\\s']-'", " ")
     
     text1 <- str_trim(text1)
-    print.default(">>> Non-word characters removed ... <<<")
     text1
     
 }
