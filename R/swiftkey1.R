@@ -100,7 +100,7 @@ build_ngram <- function(text, n, keep_top = 1000) {
     
     if (n > 1) {
         
-        ngram <- list()
+        ngram_raw <- list()
         
         ### step 1: split text into ngrams
         
@@ -117,34 +117,44 @@ build_ngram <- function(text, n, keep_top = 1000) {
                 # line <- 3
                 ###################
                 
-                ngram[[line]] <- list()
+                ngram_raw[[line]] <- list()
                 
                 n_words <- length(word_separated_lines[[line]])
                 ### in a line with n_words n_ngrams are possible
                 n_ngrams <- n_words + 1 - i
                 
-                for (p in (1:n_ngrams)) {
+                for (p in 1:n_ngrams) {
                     # start pos. of possible ngrams
                     
                     ### Development ###
                     # p <- 2
                     ###################
-                    if (n_ngrams > 1) { 
-                        ngram[[line]][[p]] <- character()
+                    if (n_ngrams >= 1) { 
+                        ngram_raw[[line]][[p]] <- character()
                         
                         for (j in 1:i) {
-                            ngram[[line]][[p]] <-
-                                c(ngram[[line]][[p]],
-                                  word_separated_lines[[line]][p + j - 1])
+                            ngram_raw[[line]][[p]] <-
+                                paste(ngram_raw[[line]][[p]],
+                                      word_separated_lines[[line]][p + j - 1],
+                                      sep = " ")
+                            
+                            # c(ngram_raw[[line]][[p]],
+                            #   word_separated_lines[[line]][p + j - 1])
                             
                         }
                     }
                 }
             }
         }
-
+        
+        ngram_vec <- unlist(ngram_raw, recursive = FALSE)
+        
+        # %>% 
+        #     group_by(ngram) %>% 
+        #     summarize(freq = n())
+        # 
     }
     
-    ngram
+    ngram_raw
     
 }

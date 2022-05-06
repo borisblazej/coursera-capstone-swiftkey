@@ -9,7 +9,7 @@ output: html_document
 # Options
 knitr::opts_chunk$set(echo = TRUE)
 
-# Paraneters
+# Parameters
 raw_text <- "../data/en_US.twitter.txt"
 
 # Libraries
@@ -31,17 +31,25 @@ source("swiftkey1.R")
 
 ```{r train}
 
-train_text <- load_text(raw_text, nrows = 300000 )
+train_text <- load_text(raw_text, nrows = 30000 )
 
 bigrams <- build_ngram(train_text, 2)
-
 bigrams[1:3]
+length(bigrams)
+
+bigram_freq <- unlist(bigrams, recursive = FALSE)
+ngram_freq <- unnest(bigram_freq)
+
+    
+bigram_freq[1:10]
+
 head(train_text, 3)
 
 trigrams <- build_ngram(train_text, 3)
 trigrams[1:3]
 head(train_text, 3)
- 
+
+str(bigrams) 
 
 ```
 
