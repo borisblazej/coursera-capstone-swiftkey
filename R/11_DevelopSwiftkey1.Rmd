@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 raw_text <- "../data/en_US.twitter.txt"
 
 # Libraries
+library(profvis)
 
 
 # The "package" = needed functions
@@ -31,26 +32,21 @@ source("swiftkey1.R")
 
 ```{r train}
 
-train_text <- load_text(raw_text, nrows = 30000 )
+train_text <- load_text(raw_text, nrows = 3000 )
+
+# words <- build_ngram(train_text, 1)
+# head(words)
 
 bigrams <- build_ngram(train_text, 2)
-bigrams[1:3]
-length(bigrams)
-
-bigram_freq <- unlist(bigrams, recursive = FALSE)
-ngram_freq <- unnest(bigram_freq)
-
-    
-bigram_freq[1:10]
-
-head(train_text, 3)
+head(bigrams, 3)
 
 trigrams <- build_ngram(train_text, 3)
-trigrams[1:3]
-head(train_text, 3)
+head(trigrams, 3)
 
-str(bigrams) 
 
+train_text[1:3]
+
+ngram_model <- train_model(train_text)
 ```
 
 

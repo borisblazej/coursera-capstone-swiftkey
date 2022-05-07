@@ -35,7 +35,7 @@ clean_text <- function(raw_text) {
 ### input: a clean phrase of Englisch text
 ### output: vector of max. 3 words occuring at the end of the phrase
 
-last_3_words <- function(phrase) {
+last_n_words <- function(phrase) {
 
     words <- str_split(phrase, "\\s") %>% 
         unlist()

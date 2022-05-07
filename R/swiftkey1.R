@@ -23,18 +23,20 @@ train_model <- function(text) {
     
     ngrams <- list()
     for(n in 1:4) {
-        ngram[[n]] <- build_ngram(text, n)
-        
-        
-        
+        ngrams[[n]] <- build_ngram(text, n)
         
     }
     
-    
-    return(model)
+    ngrams
 }
 
-next_word <- function(phrase) {
+next_word <- function(phrase, max_n = 3) {
+    
+    clean_phrase <- clean_text(phrase)
+    final_words <- last_n_words(clean_phrase, max_n)
+    
+    
+    
     
 }
 
@@ -53,13 +55,13 @@ clean_text <- function(text) {
     
     ### special characters survive only if ...
     ### ... not at begin/end
-    text1 <- str_replace_all(text1, "^['-]", " ")
-    text1 <- str_replace_all(text1, "['-]$", " ")
+    text1 <- str_replace_all(text1, "^['-]+", "")
+    text1 <- str_replace_all(text1, "['-]+$", "")
     ### ...not alone or beside each other
-    text1 <- str_replace_all(text1, "'[\\s-]", " ")
-    text1 <- str_replace_all(text1, "[\\s-]'", " ")
-    text1 <- str_replace_all(text1, "-[\\s']", " ")
-    text1 <- str_replace_all(text1, "[\\s']-'", " ")
+    text1 <- str_replace_all(text1, "'+[\\s-]", "")
+    text1 <- str_replace_all(text1, "[\\s-]'+", "")
+    text1 <- str_replace_all(text1, "-+[\\s']", "")
+    text1 <- str_replace_all(text1, "[\\s']-+", "")
     
     text1 <- str_trim(text1)
     text1
@@ -74,19 +76,22 @@ build_ngram <- function(text, n, keep_top = 1000) {
     # n <- 2
     ######################
     
+    text <- str_replace_all(text, "\\s+", " ")
+
+    
     if(n == 1) {
         
         ### step 1: split text rows into words
         words <- str_split(text, "\\s") %>% 
             unlist()
-        words <- str_trim(words)
+        X1 <- str_trim(words)
         
         ### step 2: count by words
-        word_freq <- as.data.frame(words) %>% 
-            group_by(words) %>% 
+        word_freq <- as.data.frame(X1) %>% 
+            group_by(X1) %>% 
             summarize(freq = n()) %>% 
             arrange(-freq) %>% 
-            filter(words != "") %>%
+            filter(X1 != "") %>%
             head(keep_top)
         
         ### step 3: calculate probabilities from frequencies
@@ -105,7 +110,7 @@ build_ngram <- function(text, n, keep_top = 1000) {
         ### step 1: split text into ngrams
         
         word_separated_lines <- str_split(text, "\\s")
-        
+
         n_lines <- length(word_separated_lines)
         
         for(i in 2:n) { # bigram, trigram, ...
@@ -123,8 +128,7 @@ build_ngram <- function(text, n, keep_top = 1000) {
                 ### in a line with n_words n_ngrams are possible
                 n_ngrams <- n_words + 1 - i
                 
-                for (p in 1:n_ngrams) {
-                    # start pos. of possible ngrams
+                for (p in 1:n_ngrams) { # start pos. of possible ngrams
                     
                     ### Development ###
                     # p <- 2
@@ -132,29 +136,58 @@ build_ngram <- function(text, n, keep_top = 1000) {
                     if (n_ngrams >= 1) { 
                         ngram_raw[[line]][[p]] <- character()
                         
-                        for (j in 1:i) {
-                            ngram_raw[[line]][[p]] <-
-                                paste(ngram_raw[[line]][[p]],
-                                      word_separated_lines[[line]][p + j - 1],
-                                      sep = " ")
-                            
-                            # c(ngram_raw[[line]][[p]],
-                            #   word_separated_lines[[line]][p + j - 1])
-                            
+                        for (j in 1:i) { # words in current ngram
+                            ngram_raw[[line]][[p]][[j]] <-
+                                word_separated_lines[[line]][p + j - 1]
+                                
+                                
+                                # paste(ngram_raw[[line]][[p]],
+                                #       word_separated_lines[[line]][p + j - 1],
+                                #       sep = " ")
+
                         }
                     }
                 }
             }
         }
         
-        ngram_vec <- unlist(ngram_raw, recursive = FALSE)
+        ngram_list <- unlist(ngram_raw, recursive = FALSE)
         
-        # %>% 
-        #     group_by(ngram) %>% 
-        #     summarize(freq = n())
-        # 
+        ngram_df <- data.frame(t(sapply(ngram_list,c)))
+        
+        ### step 2: count by ngram
+        ngram_freq <- ngram_df %>%
+            group_by_all() %>% 
+            summarize(freq = n(), .groups = "keep") %>% 
+            ungroup() %>% 
+            arrange(-freq) %>%
+            head(keep_top)
+        
+        ### step 3: calculate probabilities from frequencies
+        tot_n <- sum(ngram_freq$freq)
+
+        ngram <- ngram_freq %>%
+            mutate(prob = freq / tot_n) %>%
+            select(-freq)
     }
     
-    ngram_raw
+    ngram
+    
+}
+
+## last_n_words()
+### input: a clean phrase of Englisch text
+### output: vector of max. n words occuring at the end of the phrase
+
+last_n_words <- function(phrase, n) {
+    
+    words <- str_split(phrase, "\\s") %>% 
+        unlist()
+    words <- str_trim(words)
+    
+    # return max. n words or number provided in phrase
+    l <- min(length(words),n)
+    
+    tail(words, l)
     
 }
