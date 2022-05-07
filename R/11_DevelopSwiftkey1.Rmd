@@ -47,6 +47,8 @@ head(trigrams, 3)
 train_text[1:3]
 
 ngram_model <- train_model(train_text)
+
+prediction_list(ngram_model, c("i", "thank", "you"))
 ```
 
 

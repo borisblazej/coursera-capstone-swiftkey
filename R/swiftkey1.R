@@ -32,6 +32,9 @@ train_model <- function(text) {
 
 next_word <- function(phrase, max_n = 3) {
     
+    phrase <- "through the forest overlooking the"
+    max_n <- 3
+    
     clean_phrase <- clean_text(phrase)
     final_words <- last_n_words(clean_phrase, max_n)
     
@@ -87,7 +90,7 @@ build_ngram <- function(text, n, keep_top = 1000) {
         X1 <- str_trim(words)
         
         ### step 2: count by words
-        word_freq <- as.data.frame(X1) %>% 
+        ngram_freq <- as.data.frame(X1) %>% 
             group_by(X1) %>% 
             summarize(freq = n()) %>% 
             arrange(-freq) %>% 
@@ -95,11 +98,11 @@ build_ngram <- function(text, n, keep_top = 1000) {
             head(keep_top)
         
         ### step 3: calculate probabilities from frequencies
-        tot_n <- sum(word_freq$freq)
-        
-        ngram <- word_freq %>% 
-            mutate(prob = freq / tot_n) %>% 
-            select(-freq)
+        # tot_n <- sum(ngram_freq$freq)
+        # 
+        # ngram <- ngram_freq %>% 
+        #     mutate(prob = freq / tot_n) %>% 
+        #     select(-freq)
     
     }
     
@@ -164,14 +167,14 @@ build_ngram <- function(text, n, keep_top = 1000) {
             head(keep_top)
         
         ### step 3: calculate probabilities from frequencies
-        tot_n <- sum(ngram_freq$freq)
-
-        ngram <- ngram_freq %>%
-            mutate(prob = freq / tot_n) %>%
-            select(-freq)
+        # tot_n <- sum(ngram_freq$freq)
+        # 
+        # ngram <- ngram_freq %>%
+        #     mutate(prob = freq / tot_n) %>%
+        #     select(-freq)
     }
     
-    ngram
+    ngram_freq
     
 }
 
@@ -189,5 +192,54 @@ last_n_words <- function(phrase, n) {
     l <- min(length(words),n)
     
     tail(words, l)
+    
+}
+
+prediction_list <- function(model, words) {
+    
+    ### Development: ############
+    #model <- ngram_model
+    #words <- c("i", "thank", "you")
+    ########################
+    
+    ngram_dim <- length(model)
+    
+    max_freq <- sapply(model, function(x) {
+        max(x$freq)
+    })
+    
+    top_freqs <- data.frame()
+    
+    
+    for (n in 2:ngram_dim) { # bigram, trigram ...
+        
+        ### Development: ############
+        #n <- 2
+        ########################
+        
+        freqs_raw <- model[[n]]
+        
+        for (word_no in 1:(n-1)) { # word number in ngram
+        
+            ### Development: ############
+            #word_no <- 1
+            ########################
+            
+            freqs_raw <- freqs_raw %>% 
+                filter_at(n - word_no, all_vars(. == words[n - word_no + 1]))
+            
+            }
+
+            freqs <- freqs_raw %>% 
+                select_at(c(n,n+1)) %>% 
+                mutate(freq = freq + max_freq[n-1])
+            
+            names(freqs) <- c("word","score")
+            
+            top_freqs <- rbind(top_freqs, freqs)
+        
+    }
+
+    top_freqs # during development: whole list; later only top entry
     
 }
