@@ -19,26 +19,28 @@ load_text <- function(textfile, nrows = 100000) {
     text.clean
 }
 
-train_model <- function(text) {
+train_model <- function(text, keep_top = 1000) {
     
     ngrams <- list()
     for(n in 1:4) {
-        ngrams[[n]] <- build_ngram(text, n)
+        ngrams[[n]] <- build_ngram(text, n, keep_top)
         
     }
     
     ngrams
 }
 
-next_word <- function(phrase, max_n = 3) {
+next_word <- function(model, phrase, max_n = 3) {
     
-    phrase <- "through the forest overlooking the"
-    max_n <- 3
+    # phrase <- "through the forest overlooking the"
+    # max_n <- 3
     
     clean_phrase <- clean_text(phrase)
     final_words <- last_n_words(clean_phrase, max_n)
     
+    pred_list <- prediction_list(model, final_words)
     
+    pred_list[1,1]
     
     
 }
@@ -72,7 +74,7 @@ clean_text <- function(text) {
 }
 
 ## for train_model()
-build_ngram <- function(text, n, keep_top = 1000) {
+build_ngram <- function(text, n, keep_top) {
     
     ### Development: #####
     # text <- train_text
@@ -198,9 +200,11 @@ last_n_words <- function(phrase, n) {
 prediction_list <- function(model, words) {
     
     ### Development: ############
-    #model <- ngram_model
-    #words <- c("i", "thank", "you")
+    # model <- ngram_model
+    # words <- c("i", "thank", "you")
     ########################
+    
+    n_words <- length(words)
     
     ngram_dim <- length(model)
     
@@ -209,12 +213,13 @@ prediction_list <- function(model, words) {
     })
     
     top_freqs <- data.frame()
+    # top_freqs <- list()
     
     
     for (n in 2:ngram_dim) { # bigram, trigram ...
         
         ### Development: ############
-        #n <- 2
+        # n <- 3
         ########################
         
         freqs_raw <- model[[n]]
@@ -222,23 +227,31 @@ prediction_list <- function(model, words) {
         for (word_no in 1:(n-1)) { # word number in ngram
         
             ### Development: ############
-            #word_no <- 1
+            # word_no <- 2
             ########################
             
             freqs_raw <- freqs_raw %>% 
-                filter_at(n - word_no, all_vars(. == words[n - word_no + 1]))
+                filter_at(word_no, 
+                          all_vars(. == words[word_no + n_words + 1 - n]))
+            
             
             }
 
-            freqs <- freqs_raw %>% 
-                select_at(c(n,n+1)) %>% 
-                mutate(freq = freq + max_freq[n-1])
+        freqs <- freqs_raw  %>%
+             select_at(c(n, n + 1)) %>% 
+            mutate("n" = n)
+        
+        names(freqs) <- c("word", "score", "n")
+        
+        top_freqs <- rbind(top_freqs, freqs) 
             
-            names(freqs) <- c("word","score")
-            
-            top_freqs <- rbind(top_freqs, freqs)
         
     }
+        
+    top_freqs <- top_freqs %>%
+        group_by(word) %>%
+        summarise(final_score = sum(score ^ n)) %>% 
+        arrange(-final_score)
 
     top_freqs # during development: whole list; later only top entry
     

@@ -32,7 +32,7 @@ source("swiftkey1.R")
 
 ```{r train}
 
-train_text <- load_text(raw_text, nrows = 3000 )
+train_text <- load_text(raw_text, nrows = 300000 )
 
 # words <- build_ngram(train_text, 1)
 # head(words)
@@ -46,9 +46,16 @@ head(trigrams, 3)
 
 train_text[1:3]
 
-ngram_model <- train_model(train_text)
+ngram_model <- train_model(train_text, 5000)
 
-prediction_list(ngram_model, c("i", "thank", "you"))
+prediction_list(ngram_model, last_n_words("i thank you", 3))
+prediction_list(ngram_model, last_n_words("It would mean the", 3))
+prediction_list(ngram_model, last_n_words("and make me the", 3))
+
+next_word(ngram_model, "i thank you")
+next_word(ngram_model, "It would mean the")
+next_word(ngram_model, "and make me the")
+
 ```
 
 
