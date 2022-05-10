@@ -13,16 +13,17 @@ load_text <- function(textfile, nrows = 100000) {
     text.raw <- readLines(con)
     close(con)
     text.sample <- sample(x = text.raw, 
-                          size = nrows)
+                          size = min(nrows, length(text.raw)
+                                     ))
     text.clean <- clean_text(text.sample)
 
     text.clean
 }
 
-train_model <- function(text, keep_top = 1000) {
+train_model <- function(text, max_n = 4, keep_top = 1000) {
     
     ngrams <- list()
-    for(n in 1:4) {
+    for(n in 1:max_n) {
         ngrams[[n]] <- build_ngram(text, n, keep_top)
         
     }
@@ -40,7 +41,7 @@ next_word <- function(model, phrase, max_n = 3) {
     
     pred_list <- prediction_list(model, final_words)
     
-    pred_list[1,1]
+    as.character(pred_list[1,1])
     
     
 }

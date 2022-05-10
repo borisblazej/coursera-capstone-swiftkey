@@ -32,30 +32,65 @@ source("swiftkey1.R")
 
 ```{r train}
 
-train_text <- load_text(raw_text, nrows = 300000 )
-
-# words <- build_ngram(train_text, 1)
-# head(words)
-
-bigrams <- build_ngram(train_text, 2)
-head(bigrams, 3)
-
-trigrams <- build_ngram(train_text, 3)
-head(trigrams, 3)
+# Parameters
+param_text_lines <- 1000000 # 300000, 100000
+param_top_ngrams <- 10000 # 5000, 3000, 1000 
+param_n_gram <- 4 # 2,3,4
 
 
-train_text[1:3]
+# training
+set.seed(123)
+profvis({
+   sample_text <- load_text(raw_text, nrows = param_text_lines) 
+})
+sample_text <- load_text(raw_text, nrows = param_text_lines)
+train_index <- sample(1:length(sample_text), 
+                      floor(0.9*length(sample_text)))
+train_text <- sample_text[train_index]
+test_text <- sample_text[-train_index]
 
-ngram_model <- train_model(train_text, 5000)
-
-prediction_list(ngram_model, last_n_words("i thank you", 3))
-prediction_list(ngram_model, last_n_words("It would mean the", 3))
-prediction_list(ngram_model, last_n_words("and make me the", 3))
-
+profvis({
+    ngram_model <- train_model(train_text, param_n_gram, param_top_ngrams)
+})
+    
 next_word(ngram_model, "i thank you")
 next_word(ngram_model, "It would mean the")
-next_word(ngram_model, "and make me the")
+next_word(ngram_model, "i'm watching that ")
+
+ngram_model[[4]] %>% 
+    filter(X3 == "the", X2 == "mean")
 
 ```
 
+
+
+```{r test}
+
+# Prepare test data
+
+test_data <- as.data.frame(str_replace_all(test_text, "\\s+", " "))
+names(test_data) <- c("text")
+
+test_data <- test_data %>% 
+    mutate(n_words = str_count(text, "\\w\\s\\w") + 1) %>% 
+    filter(n_words >= 4)
+
+test_data$start_word <- round(runif(nrow(test_data),1,test_data$n_words -3))
+ 
+test_data <- test_data %>% 
+    mutate(regex1 = paste0("([\\w-']+\\s){",start_word-1,"}"),
+           phrase1 = str_remove(text,regex1),
+           phrase2 = str_extract(phrase1, "([\\w-']+\\s){3}[\\w-']+"),
+           input_phrase = str_extract(phrase1, "([\\w-']+\\s){3}"),
+           next_word = str_remove(phrase2,"([\\w-']+\\s){3}")) %>% 
+    select(input_phrase, next_word)
+
+# Do test and protocol
+
+test_sample <- sample(1:nrow(test_data), 100)
+
+test_protocoll <- test_data[test_sample,] %>% 
+    mutate(prediction = next_word(ngram_model,input_phrase))
+
+```
 
