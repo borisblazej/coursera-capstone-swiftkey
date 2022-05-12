@@ -181,11 +181,11 @@ build_ngram <- function(text, n, keep_top) {
     
 }
 
+last_n_words <- function(phrase, n) {
+
 ## last_n_words()
 ### input: a clean phrase of Englisch text
 ### output: vector of max. n words occuring at the end of the phrase
-
-last_n_words <- function(phrase, n) {
     
     words <- str_split(phrase, "\\s") %>% 
         unlist()

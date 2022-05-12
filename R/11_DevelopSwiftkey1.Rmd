@@ -33,25 +33,25 @@ source("swiftkey1.R")
 ```{r train}
 
 # Parameters
-param_text_lines <- 1000000 # 300000, 100000
-param_top_ngrams <- 10000 # 5000, 3000, 1000 
-param_n_gram <- 4 # 2,3,4
+param_text_lines <- 100000 # 300000, 100000
+param_top_ngrams <- 1000 # 5000, 3000, 1000 
+param_n_gram <- 3 # 2,3,4
 
 
 # training
 set.seed(123)
-profvis({
-   sample_text <- load_text(raw_text, nrows = param_text_lines) 
-})
+# profvis({
+   # sample_text <- load_text(raw_text, nrows = param_text_lines) 
+# })
 sample_text <- load_text(raw_text, nrows = param_text_lines)
 train_index <- sample(1:length(sample_text), 
                       floor(0.9*length(sample_text)))
 train_text <- sample_text[train_index]
 test_text <- sample_text[-train_index]
 
-profvis({
+# profvis({
     ngram_model <- train_model(train_text, param_n_gram, param_top_ngrams)
-})
+# })
     
 next_word(ngram_model, "i thank you")
 next_word(ngram_model, "It would mean the")
@@ -87,10 +87,26 @@ test_data <- test_data %>%
 
 # Do test and protocol
 
-test_sample <- sample(1:nrow(test_data), 100)
+test_size <- 500
+test_sample <- sample(1:nrow(test_data), test_size)
+test_protocoll <- test_data[test_sample,]
 
-test_protocoll <- test_data[test_sample,] %>% 
-    mutate(prediction = next_word(ngram_model,input_phrase))
+for(i in 1:test_size) {
+    test_protocoll$prediction[i] <- 
+        next_word(ngram_model,test_protocoll$input_phrase[i])
+}
+
+test_protocoll %>% 
+    mutate(correct = next_word == prediction) %>%
+    summarize(performance = sum(correct, na.rm = T) / n())
+
+```
+
+
+
+```{r quiz week 4}
+
+prediction_list(ngram_model, "I like how the same people are in almost all of Adam Sandler's")
 
 ```
 
