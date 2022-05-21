@@ -169,8 +169,8 @@ predict_phrase <- function(corpus, phrase) {
     # corpus <- swiftkey
     # phrase <- "big"
     # 
-    clean_phase <- clean_text(phrase)
-    final_words <- last_3_words(clean_phase)
+    clean_phrase <- clean_text(phrase)
+    final_words <- last_n_words(clean_phrase, 3)
     
     pred <- NA
     
@@ -196,6 +196,20 @@ predict_phrase(swiftkey, "me")
 predict_phrase(swiftkey, "make me")
 predict_phrase(swiftkey, "you make me")
 predict_phrase(swiftkey, "the big oger")
+predict_phrase(swiftkey, "I thank you")
+
+# Week 3 Quiz:
+predict_phrase(swiftkey, "and a case of")
+predict_phrase(swiftkey, "It would mean the")
+predict_phrase(swiftkey, "and make me the")
+predict_phrase(swiftkey, "still struggling but the")
+predict_phrase(swiftkey, "romantic date at the")
+predict_phrase(swiftkey, "them off and be on my")
+predict_phrase(swiftkey, "and be on my")
+predict_phrase(swiftkey, "seen it in quite some")
+predict_phrase(swiftkey, "his eyes with his little")
+predict_phrase(swiftkey, "the faith during the")
+predict_phrase(swiftkey, "then you must be")
 
 ```
 
