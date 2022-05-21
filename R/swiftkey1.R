@@ -198,8 +198,8 @@ last_n_words <- function(phrase, n) {
 prediction_list <- function(model, words) {
     
     ### Development: ############
-    #model <- ngram_model
-    #words <- c("i", "thank", "you")
+    model <- ngram_model
+    words <- c("i", "thank", "you")
     ########################
     
     ngram_dim <- length(model)
@@ -214,7 +214,7 @@ prediction_list <- function(model, words) {
     for (n in 2:ngram_dim) { # bigram, trigram ...
         
         ### Development: ############
-        #n <- 2
+        n <- 2
         ########################
         
         freqs_raw <- model[[n]]
@@ -222,7 +222,7 @@ prediction_list <- function(model, words) {
         for (word_no in 1:(n-1)) { # word number in ngram
         
             ### Development: ############
-            #word_no <- 1
+            word_no <- 1
             ########################
             
             freqs_raw <- freqs_raw %>% 
