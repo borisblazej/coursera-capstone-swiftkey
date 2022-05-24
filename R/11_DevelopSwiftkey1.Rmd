@@ -33,8 +33,8 @@ source("swiftkey1.R")
 ```{r train}
 
 # Parameters
-param_text_lines <- 100000 # 300000, 100000
-param_top_ngrams <- 1000 # 5000, 3000, 1000 
+param_text_lines <- 500000 # 100000-300000
+param_top_ngrams <- 3000 # 5000, 3000, 1000 
 param_n_gram <- 3 # 2,3,4
 
 
@@ -111,6 +111,18 @@ test_protocoll %>%
 
 ```{r quiz week 4}
 
+
+test <- prediction_list(ngram_model, last_n_words("When you breathe, I want to be the air for you. I'll be there for you, I'd live and I'd",3)) %>% 
+    filter(word %in% c("die", "eat", "sleep", "give"))
+prediction_list(ngram_model, last_n_words("Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his",3))
+prediction_list(ngram_model, last_n_words("I'd give anything to see arctic monkeys this",3))
+prediction_list(ngram_model, last_n_words("Talking to your mom has the same effect as a hug and helps reduce your",3))
+test <- prediction_list(ngram_model, last_n_words("When you were in Holland you were like 1 inch away from me but you hadn't time to take a",3)) %>%
+    filter(word %in% c("look", "minute", "walk", "picture"))
+test <- prediction_list(ngram_model, last_n_words("I'd just like all of these questions answered, a presentation of evidence, and a jury to settle the",3))
+prediction_list(ngram_model, last_n_words("I can't deal with unsymetrical things. I can't even hold an uneven number of bags of groceries in each",3))
+prediction_list(ngram_model, "Every inch of you is perfect from the bottom to the")
+prediction_list(ngram_model, "I’m thankful my childhood was filled with imagination and bruises from playing")
 prediction_list(ngram_model, "I like how the same people are in almost all of Adam Sandler's")
 
 ```
