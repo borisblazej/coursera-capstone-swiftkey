@@ -11,63 +11,27 @@ library(shiny)
 library(tidyverse)
 library(lubridate)
 library(stringr)
-library(forecast)
+
 
 # Define UI for application
 shinyUI(
     fluidPage(
         # Application title
-        titlePanel("Covid Case Number Forecast for Austria"),
+        titlePanel("Next word prediction based on US twitter data"),
         
-        # Sidebar with a slider input for number of bins
+        # Sidebar with a text box for writing a phrase
         sidebarLayout(
             sidebarPanel(
-                h3("Set Parameters:"),
-                sliderInput(
-                    "training_weeks",
-                    "Number of training weeks",
-                    min = 5,
-                    max = 50,
-                    value = 15
-                ),
-                dateInput(
-                    "final_training_day",
-                    "Final training day",
-                    value = today(),
-                    max = today(),
-                    min = today() - days(7 * 10)
-                ),
-                radioButtons(
-                    "province",
-                    "Select Austrian Province",
-                    choices = c(
-                        "Burgenland" = 1,
-                        "Kärnten" = 2,
-                        "Niederösterreich" = 3,
-                        "Oberösterreich" = 4,
-                        "Salzburg" = 5,
-                        "Steiermark" = 6,
-                        "Tirol" = 7,
-                        "Vorarlberg" = 8,
-                        "Wien" = 9,
-                        "Overall" = 10
-                    )
-                ),
+                h3("Start writing ..."),
+                textInput("input_phrase", "Input phrase", 
+                          value = "", width = NULL, 
+                          placeholder = NULL),
                 actionButton("update", label = "Calculate")
             ),
             
-            # Show a plot of the generated distribution
-            mainPanel(tabsetPanel(
-                type = "tabs",
-                tabPanel("Analysis", 
-                         h3("Time Series Analysis:"),
-                         plotOutput("decompose_plot")
-                         ),
-                tabPanel("Prediction", 
-                         h3("14 Days Prediction:"),
-                         plotOutput("prediction_plot")
-                         )
-            ))
+            # Give most probable next word
+            mainPanel(h3("Next Word Options:"),
+                    verbatimTextOutput("next_word"))
         )
     )
 )

@@ -33,9 +33,9 @@ source("swiftkey1.R")
 ```{r train}
 
 # Parameters
-param_text_lines <- 500000 # 100000-300000
-param_top_ngrams <- 3000 # 5000, 3000, 1000 
-param_n_gram <- 3 # 2,3,4
+param_text_lines <- 300000 # 100000-300000
+param_top_ngrams <- 1500 # 5000, 3000, 1000 
+param_n_gram <- 4 # 2,3,4
 
 
 # training
@@ -52,7 +52,10 @@ test_text <- sample_text[-train_index]
 # profvis({
     ngram_model <- train_model(train_text, param_n_gram, param_top_ngrams)
 # })
-    
+
+write_rds(ngram_model, "../data/en_US.twitter_model.rds.gz", 
+          compress = "gz")
+            
 next_word(ngram_model, "i thank you")
 next_word(ngram_model, "It would mean the")
 next_word(ngram_model, "i'm watching that ")
