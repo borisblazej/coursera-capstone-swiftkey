@@ -55,8 +55,11 @@ test_text <- sample_text[-train_index]
 
 write_rds(ngram_model, "../data/en_US.twitter_model.rds.gz", 
           compress = "gz")
-            
+
+ngram_model <- read_rds("../data/en_US.twitter_model.rds.gz")
+
 next_word(ngram_model, "i thank you")
+next_word(ngram_model, "i thank")
 next_word(ngram_model, "It would mean the")
 next_word(ngram_model, "i'm watching that ")
 

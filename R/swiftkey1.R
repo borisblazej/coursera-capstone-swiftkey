@@ -33,7 +33,8 @@ train_model <- function(text, max_n = 4, keep_top = 1000) {
 
 next_word <- function(model, phrase, max_n = 3) {
     
-    # phrase <- "through the forest overlooking the"
+    # model <- ngram_model
+    # phrase <- "through the"
     # max_n <- 3
     
     clean_phrase <- clean_text(phrase)
@@ -201,13 +202,14 @@ last_n_words <- function(phrase, n) {
 prediction_list <- function(model, words) {
     
     ### Development: ############
-    # model <- ngram_model
-    # words <- c("i", "thank", "you")
-    ########################
+    model <- ngram_model
+    words <- c("thank", "you", "for")
+    # ########################
     
     n_words <- length(words)
     
-    ngram_dim <- length(model)
+    ngram_len <- length(model)
+
     
     max_freq <- sapply(model, function(x) {
         max(x$freq)
@@ -217,25 +219,35 @@ prediction_list <- function(model, words) {
     # top_freqs <- list()
     
     
-    for (n in 2:ngram_dim) { # bigram, trigram ...
+    for (n in 2:ngram_len) { # bigram, trigram ...
         
         ### Development: ############
-        # n <- 3
+        # n <- 4
         ########################
+        
+        ### if less than maximum possible number of words given in input phrase
+        ### we must consider a shift for filtering
+        ### maximum possible is (n -1) where the shift  = 0
+        filter_shift <- n -1 -n_words
         
         freqs_raw <- model[[n]]
         
-        for (word_no in 1:(n-1)) { # word number in ngram
+        ### Loop through words of input phrase
+        ### Attention: depending on ngram_len not all words can be used!
+        for (word_no in (n_words+2-n):n_words) { 
         
             ### Development: ############
-            # word_no <- 2
+            #word_no <- 2
             ########################
             
+            ### stepwise reduction of raw frequencies by filtering by words
+            ### from i nput phrase
+            ### Attention: the position >> ngram_pos + ngram_len - 1 -n_words <<
+            ### considers input phrases with less than maximum number of words,
+            ### e.g. a 2-word phrase for a 4-gram model
             freqs_raw <- freqs_raw %>% 
-                filter_at(word_no, 
-                          all_vars(. == words[word_no + n_words + 1 - n]))
-            
-            
+                filter_at((word_no + filter_shift),
+                          all_vars(. == words[word_no]))
             }
 
         freqs <- freqs_raw  %>%
