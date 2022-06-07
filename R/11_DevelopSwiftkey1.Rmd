@@ -70,7 +70,8 @@ ngram_model[[4]] %>%
 
 ```{r predict}
 
-prediction_list(ngram_model, c("i", "thank", "you"))
+l <- prediction_list(ngram_model, c( "make", "me"))$word[1:3]
+paste(l, collapse = " ")
 
 ```
 
@@ -118,7 +119,7 @@ test_protocoll %>%
 ```{r quiz week 4}
 
 
-test <- prediction_list(ngram_model, last_n_words("When you breathe, I want to be the air for you. I'll be there for you, I'd live and I'd",3)) %>% 
+test <- prediction_list(ngram_model, last_n_words("make me",3)) %>% 
     filter(word %in% c("die", "eat", "sleep", "give"))
 prediction_list(ngram_model, last_n_words("Guy at my table's wife got up to go to the bathroom and I asked about dessert and he started telling me about his",3))
 prediction_list(ngram_model, last_n_words("I'd give anything to see arctic monkeys this",3))

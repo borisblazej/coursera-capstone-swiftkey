@@ -19,14 +19,20 @@ shinyServer(function(input, output) {
     # 2. Get input phrase ------------------------------
 
     input_phrase <- eventReactive( input$update, {
-            input$input_phrase
+        input$input_phrase
+    })
+    
+    output_phrase <- eventReactive(input$update, {
+        
+        prediction_list(ngram_model, last_n_words(input_phrase(),3))$word[1:3]
+        
     })
     
             
     # 3. Predict next word ------------------------------
-            
+    
     output$next_word <- renderText({
-        next_word(ngram_model, input_phrase())
+        paste(output_phrase(), collapse = " ")
     })
         
    

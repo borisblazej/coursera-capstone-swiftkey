@@ -202,8 +202,8 @@ last_n_words <- function(phrase, n) {
 prediction_list <- function(model, words) {
     
     ### Development: ############
-    model <- ngram_model
-    words <- c("thank", "you", "for")
+    # model <- ngram_model
+    # words <- c("i", "thank")
     # ########################
     
     n_words <- length(words)
@@ -232,12 +232,14 @@ prediction_list <- function(model, words) {
         
         freqs_raw <- model[[n]]
         
+        first_used_word <- max(n_words+2-n,1)
+        
         ### Loop through words of input phrase
         ### Attention: depending on ngram_len not all words can be used!
-        for (word_no in (n_words+2-n):n_words) { 
+        for (word_no in first_used_word:n_words) { 
         
             ### Development: ############
-            #word_no <- 2
+            # word_no <- 2
             ########################
             
             ### stepwise reduction of raw frequencies by filtering by words
@@ -260,12 +262,22 @@ prediction_list <- function(model, words) {
             
         
     }
+    
+    ### add most frequent single words for no match in ngrams:
+    single_freqs <- model[[1]] %>%
+        head(5) %>% 
+        mutate(word = X1,
+               score = 6 - row_number(),
+               n = 1) %>% 
+        select(word, score, n)
+    
+    top_freqs <- rbind(top_freqs, single_freqs)             
         
     top_freqs <- top_freqs %>%
         group_by(word) %>%
         summarise(final_score = sum(score ^ n)) %>% 
         arrange(-final_score)
 
-    top_freqs # during development: whole list; later only top entry
+    top_freqs
     
 }
