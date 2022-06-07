@@ -31,7 +31,10 @@ shinyUI(
             
             # Give most probable next word
             mainPanel(h3("Next Word Options:"),
-                    verbatimTextOutput("next_word"))
+                    verbatimTextOutput("next_word_1"),
+                    verbatimTextOutput("next_word_2"),
+                    verbatimTextOutput("next_word_3"),
+                    )
         )
     )
 )

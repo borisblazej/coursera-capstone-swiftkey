@@ -14,7 +14,7 @@ source("swiftkey1.R")
 shinyServer(function(input, output) {
 
     # 1. Load model ------------------------------
-    ngram_model <- read_rds("../data/en_US.twitter_model.rds.gz")
+    ngram_model <- read_rds("./en_US.twitter_model.rds.gz")
     
     # 2. Get input phrase ------------------------------
 
@@ -22,7 +22,7 @@ shinyServer(function(input, output) {
         input$input_phrase
     })
     
-    output_phrase <- eventReactive(input$update, {
+    output_words <- eventReactive(input$update, {
         
         prediction_list(ngram_model, last_n_words(input_phrase(),3))$word[1:3]
         
@@ -31,8 +31,14 @@ shinyServer(function(input, output) {
             
     # 3. Predict next word ------------------------------
     
-    output$next_word <- renderText({
-        paste(output_phrase(), collapse = " ")
+    output$next_word_1 <- renderText({
+        output_words()[1]
+    })
+    output$next_word_2 <- renderText({
+        output_words()[2]
+    })
+    output$next_word_3 <- renderText({
+        output_words()[3]
     })
         
    

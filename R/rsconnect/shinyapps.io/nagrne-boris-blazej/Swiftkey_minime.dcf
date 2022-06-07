@@ -1,0 +1,14 @@
+name: Swiftkey_minime
+title: Swiftkey_minime
+username:
+account: nagrne-boris-blazej
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6447470
+bundleId: 5986571
+url: https://nagrne-boris-blazej.shinyapps.io/Swiftkey_minime/
+when: 1654626994.22708
+lastSyncTime: 1654626994.22744
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 11_DevelopSwiftkey1.Rmd|dev
