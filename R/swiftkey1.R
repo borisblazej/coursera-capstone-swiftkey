@@ -31,6 +31,91 @@ train_model <- function(text, max_n = 4, keep_top = 1000) {
     ngrams
 }
 
+
+prediction_list <- function(model, words) {
+    
+    ### Development: ############
+    # model <- ngram_model
+    # words <- c("i", "thank")
+    # ########################
+    
+    n_words <- length(words)
+    
+    ngram_len <- length(model)
+    
+    
+    max_freq <- sapply(model, function(x) {
+        max(x$freq)
+    })
+    
+    top_freqs <- data.frame()
+    # top_freqs <- list()
+    
+    
+    for (n in 2:ngram_len) { # bigram, trigram ...
+        
+        ### Development: ############
+        # n <- 4
+        ########################
+        
+        ### if less than maximum possible number of words given in input phrase
+        ### we must consider a shift for filtering
+        ### maximum possible is (n -1) where the shift  = 0
+        filter_shift <- n -1 -n_words
+        
+        freqs_raw <- model[[n]]
+        
+        first_used_word <- max(n_words+2-n,1)
+        
+        ### Loop through words of input phrase
+        ### Attention: depending on ngram_len not all words can be used!
+        for (word_no in first_used_word:n_words) { 
+            
+            ### Development: ############
+            # word_no <- 2
+            ########################
+            
+            ### stepwise reduction of raw frequencies by filtering by words
+            ### from i nput phrase
+            ### Attention: the position >> ngram_pos + ngram_len - 1 -n_words <<
+            ### considers input phrases with less than maximum number of words,
+            ### e.g. a 2-word phrase for a 4-gram model
+            freqs_raw <- freqs_raw %>% 
+                filter_at((word_no + filter_shift),
+                          all_vars(. == words[word_no]))
+        }
+        
+        freqs <- freqs_raw  %>%
+            select_at(c(n, n + 1)) %>% 
+            mutate("n" = n)
+        
+        names(freqs) <- c("word", "score", "n")
+        
+        top_freqs <- rbind(top_freqs, freqs) 
+        
+        
+    }
+    
+    ### add most frequent single words for no match in ngrams:
+    single_freqs <- model[[1]] %>%
+        head(5) %>% 
+        mutate(word = X1,
+               score = 6 - row_number(),
+               n = 1) %>% 
+        select(word, score, n)
+    
+    top_freqs <- rbind(top_freqs, single_freqs)             
+    
+    top_freqs <- top_freqs %>%
+        group_by(word) %>%
+        summarise(final_score = sum(score ^ n)) %>% 
+        arrange(-final_score)
+    
+    top_freqs
+    
+}
+
+
 next_word <- function(model, phrase, max_n = 3) {
     
     # model <- ngram_model
@@ -46,8 +131,6 @@ next_word <- function(model, phrase, max_n = 3) {
     
     
 }
-
-# Internal Functions ----------------------------------------
 
 ## for load_text()
 clean_text <- function(text) {
@@ -196,88 +279,5 @@ last_n_words <- function(phrase, n) {
     l <- min(length(words),n)
     
     tail(words, l)
-    
-}
-
-prediction_list <- function(model, words) {
-    
-    ### Development: ############
-    # model <- ngram_model
-    # words <- c("i", "thank")
-    # ########################
-    
-    n_words <- length(words)
-    
-    ngram_len <- length(model)
-
-    
-    max_freq <- sapply(model, function(x) {
-        max(x$freq)
-    })
-    
-    top_freqs <- data.frame()
-    # top_freqs <- list()
-    
-    
-    for (n in 2:ngram_len) { # bigram, trigram ...
-        
-        ### Development: ############
-        # n <- 4
-        ########################
-        
-        ### if less than maximum possible number of words given in input phrase
-        ### we must consider a shift for filtering
-        ### maximum possible is (n -1) where the shift  = 0
-        filter_shift <- n -1 -n_words
-        
-        freqs_raw <- model[[n]]
-        
-        first_used_word <- max(n_words+2-n,1)
-        
-        ### Loop through words of input phrase
-        ### Attention: depending on ngram_len not all words can be used!
-        for (word_no in first_used_word:n_words) { 
-        
-            ### Development: ############
-            # word_no <- 2
-            ########################
-            
-            ### stepwise reduction of raw frequencies by filtering by words
-            ### from i nput phrase
-            ### Attention: the position >> ngram_pos + ngram_len - 1 -n_words <<
-            ### considers input phrases with less than maximum number of words,
-            ### e.g. a 2-word phrase for a 4-gram model
-            freqs_raw <- freqs_raw %>% 
-                filter_at((word_no + filter_shift),
-                          all_vars(. == words[word_no]))
-            }
-
-        freqs <- freqs_raw  %>%
-             select_at(c(n, n + 1)) %>% 
-            mutate("n" = n)
-        
-        names(freqs) <- c("word", "score", "n")
-        
-        top_freqs <- rbind(top_freqs, freqs) 
-            
-        
-    }
-    
-    ### add most frequent single words for no match in ngrams:
-    single_freqs <- model[[1]] %>%
-        head(5) %>% 
-        mutate(word = X1,
-               score = 6 - row_number(),
-               n = 1) %>% 
-        select(word, score, n)
-    
-    top_freqs <- rbind(top_freqs, single_freqs)             
-        
-    top_freqs <- top_freqs %>%
-        group_by(word) %>%
-        summarise(final_score = sum(score ^ n)) %>% 
-        arrange(-final_score)
-
-    top_freqs
     
 }
